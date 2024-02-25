@@ -6,7 +6,7 @@ def get_next_week(today: datetime.date) -> list[datetime.date]:  # returns a lis
     one_day = timedelta(days=1)
     week = []
     for _ in range(7):
-        week.append((today.month, today.day))
+        week.append(today)
         today += one_day
     return week
 
@@ -40,13 +40,16 @@ def get_birthdays_per_week(users: list[dict]):
     actual_week = get_next_week(today)
 
     for user in users:  # {"name": "Michael", "birthday": datetime(1995, 1, 16)}
-        if (user["birthday"].month, user["birthday"].day) in actual_week:
-            user_birthday = datetime(today.year, user["birthday"].month, user["birthday"].day)
-            day_of_week = convert_date_to_day(user_birthday)
-            if day_of_week in ("Saturday", "Sunday"):
-                work_week_greetings["Monday"].append(user["name"])
-            else:
-                work_week_greetings[day_of_week].append(user["name"])
+        user_birthday = user["birthday"].date()
+        for i in range(len(actual_week)):
+            if (user_birthday.month, user_birthday.day) == (actual_week[i].month, actual_week[i].day):
+                day_of_week = convert_date_to_day(actual_week[i])
+                if day_of_week == "Saturday" and i < 5:
+                    work_week_greetings["Monday"].append(user["name"])
+                elif day_of_week == "Sunday" and i < 6:
+                    work_week_greetings["Monday"].append(user["name"])
+                elif day_of_week != "Saturday" and day_of_week != "Sunday":
+                    work_week_greetings[day_of_week].append(user["name"])
 
     for day, names in work_week_greetings.items():
         print("{}: {}".format(day, ", ".join(names)))
@@ -65,3 +68,5 @@ if __name__ == "__main__":
     get_birthdays_per_week(list_of_users)
     print()
     print("24.02.2022 was {}".format(convert_date_to_day(datetime(2022, 2, 24))))
+    print()
+    print(get_next_week(datetime.now().date()))
